@@ -1,0 +1,28 @@
+﻿<Window x:Class="WpfClient.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:WpfClient"
+        mc:Ignorable="d"
+        Title="Client" Height="450" Width="800">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <DataGrid AutoGenerateColumns="False" x:Name="dataGrid">
+            <DataGrid.Columns>
+                <DataGridTextColumn Binding="{Binding ProductCode}" Header="Код продукта" Width="*"/>
+                <DataGridTextColumn Binding="{Binding Amount}" Header="Количество" Width="110"/>
+            </DataGrid.Columns>
+        </DataGrid>
+        <StackPanel HorizontalAlignment="Center"  Grid.Row="1" Orientation="Horizontal">
+            <Button x:Name="addButton" Content="Добавить" Click="addButton_Click" />
+            <TextBlock x:Name="TextBlockProductCode">Код продукта</TextBlock>
+            <TextBox x:Name="TextBoxProductCode" Width="200"/>
+            <TextBlock x:Name="TextBlockAmount"> Количество</TextBlock>
+            <TextBox x:Name="TextBoxAmount" Width="200"/>
+        </StackPanel>
+    </Grid>
+</Window>
