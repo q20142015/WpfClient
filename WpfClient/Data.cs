@@ -12,10 +12,13 @@ namespace WpfClient
         public string ProductCode { get; set; }
         public int Amount { get; set; }
 
-        public Data(string productCode, int amount)
+        public DateTime DateTime { get; set; } 
+
+        public Data(string productCode, int amount, DateTime dateTime)
         {
             ProductCode = productCode;
             Amount = amount;
+            DateTime = dateTime;
         }
 
     }

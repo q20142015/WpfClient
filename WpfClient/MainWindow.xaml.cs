@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.ObjectModel;
 using System.Net.Sockets;
 using System.Security.Cryptography;
 using System.Text;
@@ -25,7 +26,6 @@ namespace WpfClient
     {
         Ulid ID = Ulid.NewUlid();
         ObservableCollection<Data> dataCollection= new ObservableCollection<Data>();
-        int iNumSend = 0;
         object locker = new();
         public MainWindow()
         {
@@ -37,9 +37,9 @@ namespace WpfClient
         {
             while (true)
             {
-                if (dataCollection.Count > 0)
+                if (DWorkWithCollection(null, 2).Amount > 0)
                 {
-                    Data data = dataCollection[0];
+                    Data data = DWorkWithCollection(null, 3);
                     using (TcpClient tcpClient = new TcpClient())
                     {
                         try
@@ -49,12 +49,11 @@ namespace WpfClient
                             {
                                 using (var stream = tcpClient.GetStream())
                                 {
-                                    var message = string.Join(" ", ID, data.ProductCode, data.Amount);
+                                    var message = string.Join(" ", ID, data.ProductCode, data.Amount,data.DateTime);
                                     message += " " + SHA256Checksum.Calculate(message) + '\n';
 
                                     byte[] requestData = Encoding.UTF8.GetBytes(message);
                                     stream.Write(requestData, 0, requestData.Length);
-                                    byte[] responseData = new byte[1024];
                                     int bytes = 0;
                                     var responseByte = new List<byte>();
                                     while ((bytes = stream.ReadByte()) != '\n')
@@ -66,12 +65,11 @@ namespace WpfClient
                                     var response = Encoding.UTF8.GetString(responseByte.ToArray());
 
                                     if (response.ToString() == "ok")
-                                    { vAddDeleteData(data, false); }
+                                    { DWorkWithCollection(data, 1); }
                                 }
                             }
                         }
-                        catch (Exception) { 
-                        }
+                        catch (Exception) { }
                     }
                     await Task.Delay(5000);
                 }
@@ -82,24 +80,30 @@ namespace WpfClient
             }
         }
 
-        private void vAddDeleteData(Data data, bool bAdd)
+        private Data DWorkWithCollection(Data data, int iCase)
         {
             lock (locker)
             {
-                if (bAdd)
+                switch (iCase)
                 {
-                    App.Current.Dispatcher.Invoke((Action)delegate
-                    {
-                        dataCollection.Add(data);
-                    });
+                    case 0:
+                        App.Current.Dispatcher.Invoke((Action)delegate
+                        {
+                            dataCollection.Add(data);
+                        });
+                        break;
+                    case 1:
+                        App.Current.Dispatcher.Invoke((Action)delegate
+                        {
+                            dataCollection.RemoveAt(0);
+                        });
+                        break;
+                    case 2:
+                        return new Data("0", dataCollection.Count, DateTime.Now);
+                    case 3:
+                        return dataCollection[0];
                 }
-                else
-                {
-                    App.Current.Dispatcher.Invoke((Action)delegate
-                    {
-                        dataCollection.RemoveAt(0);
-                    });
-                }
+                return data;
             }
         }
         private void addButton_Click(object sender, RoutedEventArgs e)
@@ -108,7 +112,7 @@ namespace WpfClient
             bool bParse = int.TryParse(TextBoxAmount.Text, out iNum);
             if (bParse)
             {
-                vAddDeleteData(new Data(TextBoxProductCode.Text.Replace(" ", ""), iNum), true);
+                DWorkWithCollection(new Data(TextBoxProductCode.Text.Replace(" ", ""), iNum,DateTime.Now), 0);
                 //TextBoxProductCode.Text = "";
                 //TextBoxAmount.Text = "";
             }
